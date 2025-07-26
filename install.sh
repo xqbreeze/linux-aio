@@ -149,6 +149,7 @@ install_zsh() {
     echo "Default shell changed to zsh (will apply after next login)."
   else
     echo "To apply the new Zsh configuration, please run: source ~/.zshrc"
+  fi
 }
 
 # INSTALL LSD
