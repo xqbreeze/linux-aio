@@ -10,6 +10,7 @@ TMPDIR=""
 DRY_RUN=false
 DO_TMUX=false
 DO_ZSH=false
+DO_LSD=false
 
 function show_help() {
   cat <<EOF
@@ -19,6 +20,7 @@ Options:
   -a, --all        Install all options
   -t, --tmux       Install tmux configuration
   -z, --zsh        Install zsh configuration
+  -l, --lsd        Install lsd
       --dry-run    Display all commands without executing
   -h, --help       Display help message
 EOF
@@ -36,16 +38,17 @@ echo_cmd() {
 # parse options
 while (( "$#" )); do
   case "$1" in
-    -a|--all)    DO_TMUX=true; DO_ZSH=true; shift ;;
+    -a|--all)    DO_TMUX=true; DO_ZSH=true; DO_LSD=true; shift ;;
     -t|--tmux)   DO_TMUX=true; shift ;;
     -z|--zsh)    DO_ZSH=true; shift ;;
+    -l|--lsd)    DO_LSD=true; shift ;;
     --dry-run)   DRY_RUN=true; shift ;;
     -h|--help)   show_help; exit 0 ;;
     *) echo "Unknown option: $1"; show_help >&2; exit 1 ;;
   esac
 done
 
-if ! $DO_TMUX && ! $DO_ZSH; then
+if ! $DO_TMUX && ! $DO_ZSH && ! $DO_LSD; then
   echo "No options selected." >&2
   show_help >&2
   exit 1
@@ -139,19 +142,29 @@ install_zsh() {
     echo_cmd "sed -i -E 's/^ZSH_THEME=.*/ZSH_THEME=\"dpz34\"/' ~/.zshrc"
   fi
 
-  # change default shell or reload zsh config based on login shell
+  # change default shell
   CURRENT_SHELL=$(basename "$SHELL")
-  if [[ "$CURRENT_SHELL" == "bash" ]]; then
+  if [[ "$CURRENT_SHELL" != "zsh" ]]; then
     echo_cmd "chsh -s \$(command -v zsh)"
     echo "Default shell changed to zsh (will apply after next login)."
   else
     echo "To apply the new Zsh configuration, please run: source ~/.zshrc"
+}
+
+# INSTALL LSD
+install_lsd() {
+  echo "=== Installing lsd ==="
+  if ! command -v lsd >/dev/null; then
+    echo_cmd "$PKG_INSTALL lsd"
+  else
+    echo "lsd is already installed."
   fi
 }
 
 # MAIN
 $DO_ZSH  && install_zsh
 $DO_TMUX && install_tmux
+$DO_LSD  && install_lsd
 
 echo ""
 echo "Done!"
