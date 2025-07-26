@@ -108,12 +108,6 @@ install_tmux() {
   # fetch .tmux.conf
   echo_cmd "wget -qO ~/.tmux.conf $REPO_RAW/tmux/.tmux.conf"
   echo "tmux configured."
-
-  # if Oh My Zsh is installed, add tmux plugin to zsh plugins
-  if [[ -d "$HOME/.oh-my-zsh" && -f "$HOME/.zshrc" ]]; then
-    echo "Adding 'tmux' plugin to Zsh configuration..."
-    echo_cmd "sed -i -E 's/^(plugins=\([^)]+)/\1 tmux/' ~/.zshrc"
-  fi
 }
 
 # INSTALL ZSH
