@@ -51,9 +51,15 @@ if ! $DO_TMUX && ! $DO_ZSH; then
   exit 1
 fi
 
-# check for sudo access
-if ! sudo -n true 2>/dev/null; then
-  echo "Error: sudo privileges are required." >&2
+# check for sudo availability and prompt for password
+if ! command -v sudo >/dev/null; then
+  echo "Error: sudo is required but not installed." >&2
+  exit 1
+fi
+
+echo "Checking sudo privileges..."
+if ! sudo true; then
+  echo "Error: sudo authentication failed." >&2
   exit 1
 fi
 
@@ -93,7 +99,11 @@ install_tmux() {
   fi
 
   # download tpm plugin manager
-  echo_cmd "git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
+  if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+    echo_cmd "git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
+  else
+    echo "tpm is already installed."
+  fi
 
   # fetch .tmux.conf
   echo_cmd "wget -O ~/.tmux.conf $REPO_RAW/tmux/.tmux.conf"
@@ -103,15 +113,18 @@ install_tmux() {
 # INSTALL ZSH
 install_zsh() {
   echo "=== Setting up zsh ==="
-  # install zsh if missing
   if ! command -v zsh >/dev/null; then
     echo_cmd "$PKG_INSTALL zsh"
   else
     echo "zsh is already installed."
   fi
 
-  # install oh-my-zsh
-  echo_cmd 'RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
+  # install oh-my-zsh if missing
+  if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    echo_cmd 'RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
+  else
+    echo "Oh My Zsh is already installed."
+  fi
 
   # download and copy custom folder
   prepare_tmp
@@ -120,13 +133,19 @@ install_zsh() {
   echo_cmd "rm -rf ~/.oh-my-zsh/custom"
   echo_cmd "cp -r $TMPDIR/linux-aio-master/zsh/custom ~/.oh-my-zsh/custom"
 
-  # change default shell
-  echo_cmd "chsh -s \$(command -v zsh)"
-  echo "zsh configured (shell change will apply after next login)."
+  # change default shell or reload zsh config based on login shell
+  CURRENT_SHELL=$(basename "$SHELL")
+  if [[ "$CURRENT_SHELL" == "bash" ]]; then
+    echo_cmd "chsh -s \$(command -v zsh)"
+    echo "Default shell changed to zsh (will apply after next login)."
+  else
+    echo "To apply the new Zsh configuration, please run: source ~/.zshrc"
+  fi
 }
 
 # MAIN
 $DO_TMUX && install_tmux
 $DO_ZSH  && install_zsh
 
+echo ""
 echo "Done!"
