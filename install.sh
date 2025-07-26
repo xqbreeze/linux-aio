@@ -106,8 +106,14 @@ install_tmux() {
   fi
 
   # fetch .tmux.conf
-  echo_cmd "wget -O ~/.tmux.conf $REPO_RAW/tmux/.tmux.conf"
+  echo_cmd "wget -qO ~/.tmux.conf $REPO_RAW/tmux/.tmux.conf"
   echo "tmux configured."
+
+  # if Oh My Zsh is installed, add tmux plugin to zsh plugins
+  if [[ -d "$HOME/.oh-my-zsh" && -f "$HOME/.zshrc" ]]; then
+    echo "Adding 'tmux' plugin to Zsh configuration..."
+    echo_cmd "sed -i -E 's/^(plugins=\([^)]+)/\1 tmux/' ~/.zshrc"
+  fi
 }
 
 # INSTALL ZSH
@@ -128,10 +134,16 @@ install_zsh() {
 
   # download and copy custom folder
   prepare_tmp
-  echo_cmd "wget -O $TMPDIR/master.tar.gz https://github.com/diluccio42/linux-aio/archive/refs/heads/master.tar.gz"
+  echo_cmd "wget -qO $TMPDIR/master.tar.gz https://github.com/diluccio42/linux-aio/archive/refs/heads/master.tar.gz"
   echo_cmd "tar -xzf $TMPDIR/master.tar.gz -C $TMPDIR"
   echo_cmd "rm -rf ~/.oh-my-zsh/custom"
   echo_cmd "cp -r $TMPDIR/linux-aio-master/zsh/custom ~/.oh-my-zsh/custom"
+
+  # set ZSH_THEME to dpz34
+  if [[ -f "$HOME/.zshrc" ]]; then
+    echo "Setting ZSH_THEME to 'dpz34'..."
+    echo_cmd "sed -i -E 's/^ZSH_THEME=.*/ZSH_THEME=\"dpz34\"/' ~/.zshrc"
+  fi
 
   # change default shell or reload zsh config based on login shell
   CURRENT_SHELL=$(basename "$SHELL")
@@ -144,8 +156,8 @@ install_zsh() {
 }
 
 # MAIN
-$DO_TMUX && install_tmux
 $DO_ZSH  && install_zsh
+$DO_TMUX && install_tmux
 
 echo ""
 echo "Done!"
