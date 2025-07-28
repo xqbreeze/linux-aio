@@ -5,12 +5,13 @@ Personal aio script for quick setup on Debian/Ubuntu-based distros and Fedora
 ## Current features
 - tmux + TPM setup
 - zsh + Oh My Zsh + custom setup
-- dry run `--dry-run`
+- lsd
+- dry run
 
 ## Prerequisites
 - bash
 - sudo
-- wget/curl
+- curl/wget
 
 ## Installation
 
