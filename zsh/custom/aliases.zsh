@@ -1,3 +1,6 @@
 alias python=python3
-alias l='lsd -lah'
-alias ll='ls -lah'
+if ! command -v lsd >/dev/null; then
+  alias ll='ls -lah'
+else
+  alias l='lsd -lah'
+fi
