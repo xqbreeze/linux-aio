@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-REPO_RAW="https://raw.githubusercontent.com/diluccio42/linux-aio/master"
+REPO_RAW="https://raw.githubusercontent.com/xqbreeze/linux-aio/master"
 TMPDIR=""
 DRY_RUN=false
 DO_TMUX=false
